@@ -2,13 +2,17 @@
 @layout AuthLayout
 @using PlaningApp.Shared.Models
 
-
+@inject AuthenticationService authService
+@inject NavigationManager navigationManager
 <div class="row">
     <div class="col-12">
         <h2>Yeni hesap oluştur</h2>
         <EditForm Model="model" OnValidSubmit="RegisterUser">
             <RadzenCard>
-
+                @if (!string.IsNullOrWhiteSpace(message))
+                {
+                    <div class="alert alert-info">@message</div>
+                }
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
@@ -27,8 +31,8 @@
                 <label>Şifreyi Onayla</label>
                 <RadzenPassword @bind-Value="model.ConfirmPassword"></RadzenPassword>
                 <hr />
-                <RadzenButton ButtonType="Radzen.ButtonType.Submit" Text="Oluştur" ButtonStyle="Radzen.ButtonStyle.Primary" class="btn-block mr-2"></RadzenButton>
-                <RadzenButton ButtonType="Radzen.ButtonType.Button" Text="Giriş" ButtonStyle="Radzen.ButtonStyle.Secondary" class="btn-block mr-2"></RadzenButton>
+                <RadzenButton ButtonType="Radzen.ButtonType.Submit" Text="Oluştur" ButtonStyle="Radzen.ButtonStyle.Primary" class="btn-block mr-2" Disabled="isBusy"></RadzenButton>
+                <RadzenButton ButtonType="Radzen.ButtonType.Button" Text="Giriş" ButtonStyle="Radzen.ButtonStyle.Secondary" class="btn-block mr-2" Disabled="isBusy"></RadzenButton>
             </RadzenCard>
         </EditForm>
     </div>
@@ -37,8 +41,21 @@
 @code {
     RegisterRequest model = new RegisterRequest();
 
-    public void RegisterUser()
-    {
+    bool isBusy = false;
+    string message = string.Empty;
 
+    public async Task RegisterUser()
+    {
+        isBusy = true;
+        var result = await authService.RegisterUserAsync(model);
+        if (result.IsSuccess)
+        {
+            message = result.Message;
+        }
+        else
+        {
+            message = result.Message;
+        }
+        isBusy = false;
     }
 }
