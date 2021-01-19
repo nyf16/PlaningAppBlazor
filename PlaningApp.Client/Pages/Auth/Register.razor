@@ -9,10 +9,7 @@
         <h2>Yeni hesap oluştur</h2>
         <EditForm Model="model" OnValidSubmit="RegisterUser">
             <RadzenCard>
-                @if (!string.IsNullOrWhiteSpace(message))
-                {
-                    <div class="alert alert-info">@message</div>
-                }
+                <AlertMessage Message="@message" MessageType="@messageType"></AlertMessage>
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
@@ -43,6 +40,7 @@
 
     bool isBusy = false;
     string message = string.Empty;
+    Models.AlertMessageType messageType = Models.AlertMessageType.Success;
 
     public async Task RegisterUser()
     {
@@ -51,10 +49,12 @@
         if (result.IsSuccess)
         {
             message = result.Message;
+            messageType = Models.AlertMessageType.Success;
         }
         else
         {
-            message = result.Message;
+            message = result.Errors.FirstOrDefault() ?? result.Message;
+            messageType = Models.AlertMessageType.Error;
         }
         isBusy = false;
     }
