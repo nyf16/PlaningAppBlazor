@@ -57,7 +57,7 @@
         }
         else
         {
-            message = result.Errors.FirstOrDefault() ?? result.Message;
+            message = result.Message;
             messageType = Models.AlertMessageType.Error;
         }
         isBusy = false;
