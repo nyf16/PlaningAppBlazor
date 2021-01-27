@@ -5,6 +5,8 @@
 
 @inject AuthenticationService authService
 @inject NavigationManager navigationManager
+@inject ILocalStorageService storageService
+
 <div class="row">
     <div class="col-12">
         <h2>Hesabınıza giriş yapın</h2>
@@ -12,12 +14,6 @@
             <RadzenCard>
                 <AlertMessage Message="@message" MessageType="@messageType"></AlertMessage>
 
-                <ul>
-                    @foreach (var item in userInfo)
-                    {
-                        <li>@item.Key : @item.Value </li>
-                    }
-                </ul>
 
                 <DataAnnotationsValidator />
                 <ValidationSummary />
@@ -52,8 +48,18 @@
         if (result.IsSuccess)
         {
             message = "Planlama Uygulamasına Hoşgeldiniz";
-            userInfo = result.UserInfo;
             messageType = Models.AlertMessageType.Success;
+
+            var userInfo = new PlaningApp.Client.Models.LocalUserInfo()
+            {
+                AccessToken = result.Message,
+                Email = result.UserInfo["Email"],
+                FirstName = result.UserInfo["İsim"],
+                LastName = result.UserInfo["Soyisim"],
+                Id = result.UserInfo[System.Security.Claims.ClaimTypes.NameIdentifier]
+            };
+
+            await storageService.SetItemAsync("User", userInfo);
         }
         else
         {
