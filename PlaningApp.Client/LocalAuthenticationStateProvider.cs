@@ -35,8 +35,9 @@ namespace PlaningApp.Client
 
                 var identity = new ClaimsIdentity(claims, "Bearer Token");
                 var user = new ClaimsPrincipal(identity);
-
-                return new AuthenticationState(user);
+                var state = new AuthenticationState(user);
+                NotifyAuthenticationStateChanged(Task.FromResult(state));
+                return state;
             }
 
             return new AuthenticationState(new System.Security.Claims.ClaimsPrincipal());
