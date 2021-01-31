@@ -27,8 +27,8 @@ namespace PlaningApp.Client
                 var claims = new[]
                 {
                     new Claim("Email", userInfo.Email),
-                    new Claim("İsim",userInfo.FirstName),
-                    new Claim("Soyİsim",userInfo.FirstName),
+                    new Claim("FirstName",userInfo.FirstName),
+                    new Claim("LastName",userInfo.FirstName),
                     new Claim("AccessToken", userInfo.AccessToken),
                     new Claim(ClaimTypes.NameIdentifier,userInfo.Id)
                 };
@@ -41,6 +41,12 @@ namespace PlaningApp.Client
             }
 
             return new AuthenticationState(new System.Security.Claims.ClaimsPrincipal());
+        }
+
+        public async Task LogoutAsync()
+        {
+            await _storageService.RemoveItemAsync("User");
+            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal())));
         }
     }
 }

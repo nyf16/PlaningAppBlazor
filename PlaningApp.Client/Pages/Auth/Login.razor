@@ -54,7 +54,7 @@
                 Email = result.UserInfo["Email"],
                 FirstName = result.UserInfo["FirstName"],
                 LastName = result.UserInfo["LastName"],
-                Id = result.UserInfo[System.Security.Claims.ClaimTypes.NameIdentifier]
+                Id = result.UserInfo[System.Security.Claims.ClaimTypes.NameIdentifier],
             };
 
             await storageService.SetItemAsync("User", userInfo);
