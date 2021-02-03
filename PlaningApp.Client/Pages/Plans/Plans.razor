@@ -1,10 +1,18 @@
 ﻿@page "/plans"
-@page "/plans/{pageNumber}"
+@page "/plans/{pageNumber:int}"
 
 @inject PlansService plansService
 @attribute [Authorize]
 
-<h3>Planlarım</h3>
+@if (string.IsNullOrWhiteSpace(Query))
+{
+    <h2>Planlarım - Sayfa: @PageNumber</h2>
+}
+else
+{
+    <h2>Planlarım - '@Query' için sonuçlar - Sayfa: @PageNumber</h2>
+}
+
 @if (isBusy)
 {
     <h2>Yükleniyor...</h2>
@@ -12,7 +20,9 @@
 else
 {
     <div class="row">
-        <RadzenTextBox Placeholder="Search Query"></RadzenTextBox>
+        <RadzenTextBox Placeholder="Arama Yapın" @bind-Value="Query"></RadzenTextBox>
+        &nbsp;
+        <RadzenButton Text="Ara" Click="async () => await getPlansAsync()"></RadzenButton>
     </div>
     <hr />
 
@@ -22,7 +32,7 @@ else
             <div class="col-4">
                 <RadzenCard Style="margin:10px">
                     <img src="@plan.CoverPath" style="width:90%;margin:5px" />
-                    <a href="/plans/details/@plan.Id">@plan.Title</a>                  
+                    <a href="/plans/details/@plan.Id">@plan.Title</a>
                     <p>@plan.Description</p>
                     <hr />
                     <div class="row">
@@ -60,6 +70,9 @@ else
     [Parameter]
     public int? PageNumber { get; set; }
 
+    [Parameter]
+    public string Query { get; set; }
+
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
 
@@ -77,7 +90,13 @@ else
 
         if (PageNumber == null)
             PageNumber = 1;
-        var result = await plansService.GetAllPlansByPageAsync(PageNumber.Value);
+
+        PlansCollectionPagingResponse result;
+
+        if (string.IsNullOrWhiteSpace(Query))
+            result = await plansService.GetAllPlansByPageAsync(PageNumber.Value);
+        else
+            result = await plansService.SearchPlansByPageAsync(Query, PageNumber.Value);
 
         // 50 plans | page size = 10 => 5 pages
         // 54 plans | page size = 10 => 5 pages -> page = 4 plans
