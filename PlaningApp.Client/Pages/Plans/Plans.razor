@@ -20,16 +20,15 @@ else
         @foreach (var plan in plans)
         {
             <div class="col-4">
-                <RadzenCard>
-                    <img src="@plan.CoverPath" style="height:100px;margin:5px" />
-                    <h2>@plan.Title</h2>
+                <RadzenCard Style="margin:10px">
+                    <img src="@plan.CoverPath" style="width:90%;margin:5px" />
+                    <a href="/plans/details/@plan.Id">@plan.Title</a>                  
                     <p>@plan.Description</p>
+                    <hr />
                     <div class="row">
                         <div class="col-6">
                             <RadzenButton ButtonStyle="Radzen.ButtonStyle.Success" Text="Düzenle" class="btn-block"></RadzenButton>
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="col-6">
                             <RadzenButton ButtonStyle="Radzen.ButtonStyle.Danger" Text="Sil" class="btn-block"></RadzenButton>
                         </div>
@@ -41,7 +40,18 @@ else
     <hr />
 
     <div class="row">
-        <RadzenButton ButtonStyle="Radzen.ButtonStyle.Info" Text="1" Style="margin:8px;"></RadzenButton>
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            int page = i;
+            @if (page == PageNumber)
+            {
+                <RadzenButton ButtonStyle="Radzen.ButtonStyle.Info" Text="@i.ToString()" Click="async () => await moveToPageAsync(page)" Disabled="true" Style="margin:8px;"></RadzenButton>
+            }
+            else
+            {
+                <RadzenButton ButtonStyle="Radzen.ButtonStyle.Info" Text="@i.ToString()" Click="async () => await moveToPageAsync(page)" Style="margin:8px;"></RadzenButton>
+            }
+        }
     </div>
 }
 
@@ -56,6 +66,8 @@ else
     bool isBusy = false;
     List<Plan> plans = new List<Plan>();
 
+    int totalPages = 1;
+
     async Task getPlansAsync()
     {
         isBusy = true;
@@ -67,9 +79,22 @@ else
             PageNumber = 1;
         var result = await plansService.GetAllPlansByPageAsync(PageNumber.Value);
 
+        // 50 plans | page size = 10 => 5 pages
+        // 54 plans | page size = 10 => 5 pages -> page = 4 plans
+        if (result.Count % result.PageSize == 0)
+            totalPages = result.Count / result.PageSize;
+        else
+            totalPages = (result.Count / result.PageSize) + 1;
+
         plans = result.Records.ToList();
 
         isBusy = false;
+    }
+
+    async Task moveToPageAsync(int pageNumber)
+    {
+        PageNumber = pageNumber;
+        await getPlansAsync();
     }
 
     protected override async Task OnInitializedAsync()
