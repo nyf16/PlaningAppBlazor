@@ -99,9 +99,20 @@ namespace PlaningApp.Shared.Services
             if (model.CoverFile != null)
                 formKeyValues.Add(new FileFormKeyValue("CoverFile", model.CoverFile, model.FileName));
 
-            var response = await client.SendFormProtectedAsync<PlanSingleResponse>($"{ _baseUrl}/api/plans", ActionType.POST,
+            var response = await client.SendFormProtectedAsync<PlanSingleResponse>($"{ _baseUrl}/api/plans", ActionType.PUT,
                 formKeyValues.ToArray());
 
+            return response.Result;
+        }
+
+        /// <summary>
+        /// Delete plan from the account
+        /// </summary>
+        /// <param name="id"></param> ID of the plan to be deleted
+        /// <returns></returns>
+        public async Task<PlanSingleResponse> DeletePlanAsync(string id)
+        {
+            var response = await client.DeleteProtectedAsync<PlanSingleResponse>($"{_baseUrl}/api/plans/{id}");
             return response.Result;
         }
     }

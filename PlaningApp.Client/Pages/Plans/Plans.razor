@@ -43,9 +43,17 @@ else
                             </RadzenButton>
                         </div>
                         <div class="col-6">
-                            <RadzenButton ButtonStyle="Radzen.ButtonStyle.Danger" Text="Sil" class="btn-block"></RadzenButton>
+                            <RadzenButton ButtonStyle="Radzen.ButtonStyle.Danger" Text="Sil" class="btn-block" Click="()=> selectPlan(plan.Id)"></RadzenButton>
                         </div>
                     </div>
+                    @if (selectedPlanId == plan.Id)
+                    {
+                        <div class="row">
+                            <div class="col-12">
+                                <RadzenButton ButtonStyle="Radzen.ButtonStyle.Info" Text="Onayla" class="btn-block" Click="async () => await deletePlanAsync()" Style="margin-top:5px;"></RadzenButton>
+                            </div>
+                        </div>
+                    }
                 </RadzenCard>
             </div>
         }
@@ -117,6 +125,31 @@ else
     {
         PageNumber = pageNumber;
         await getPlansAsync();
+    }
+
+    string selectedPlanId = string.Empty;
+
+    void selectPlan(string id)
+    {
+        selectedPlanId = id;
+    }
+
+    async Task deletePlanAsync()
+    {
+        isBusy = true;
+
+        var result = await plansService.DeletePlanAsync(selectedPlanId);
+        if (result.IsSuccess)
+        {
+            var deletedPlan = plans.SingleOrDefault(p => p.Id == selectedPlanId);
+            plans.Remove(deletedPlan);
+        }
+        else
+        {
+            await getPlansAsync();
+        }
+
+        isBusy = false;
     }
 
     protected override async Task OnInitializedAsync()
