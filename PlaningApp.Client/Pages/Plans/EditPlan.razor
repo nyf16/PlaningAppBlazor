@@ -1,6 +1,7 @@
 ﻿@page "/plans/details/{id}"
 
 @inject PlansService plansService
+@inject ToDoItemsService itemsService
 @inject IFileReaderService fileReaderService
 @inject NavigationManager navigationManager
 
@@ -29,6 +30,38 @@
     <div class="col-6">
         <RadzenCard>
             <h2>Planın detayları</h2>
+            <EditForm Model="itemModel" OnValidSubmit="async () => await submitItemFormAsync()">
+                <DataAnnotationsValidator></DataAnnotationsValidator>
+                <ValidationSummary></ValidationSummary>
+
+                <table>
+                    <tr>
+                        <td>
+                            <RadzenButton Text="*" ButtonStyle="Radzen.ButtonStyle.Info" ButtonType="Radzen.ButtonType.Button"></RadzenButton>
+                        </td>
+                        <td>
+                            <RadzenTextBox Placeholder="Açıklama ..." @bind-Value="itemModel.Description"></RadzenTextBox>
+                        </td>
+                        <td>
+                            <RadzenButton Text="Kaydet" ButtonStyle="Radzen.ButtonStyle.Primary" ButtonType="Radzen.ButtonType.Submit"></RadzenButton>
+                        </td>
+                    </tr>
+                    @foreach (var item in items)
+                    {
+                        <tr>
+                            <td>
+                                <RadzenCheckBox Value="item.IsDone"></RadzenCheckBox>
+                            </td>
+                            <td>
+                                <span>@item.Description</span>
+                            </td>
+                            <td>
+                                <RadzenButton Text="X" ButtonStyle="Radzen.ButtonStyle.Danger" ButtonType="Radzen.ButtonType.Button"></RadzenButton>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </EditForm>
         </RadzenCard>
     </div>
 </div>
@@ -119,6 +152,7 @@
             model.Description = result.Record.Description;
             imageContent = result.Record.CoverPath;
             model.Id = Id;
+            items = result.Record.ToDoItems.ToList();
         }
         else
         {
@@ -132,8 +166,45 @@
     protected async override Task OnInitializedAsync()
     {
         var userState = authenticationState.Result;
-        plansService.AccessToken = userState.User.FindFirst("AccessToken").Value;
+        string accessToken = userState.User.FindFirst("AccessToken").Value;
+        plansService.AccessToken = accessToken;
+        itemsService.AccessToken = accessToken;
 
         await getPlanById();
     }
+
+    #region Items
+    List<ToDoItem> items = new List<ToDoItem>();
+    ToDoItem selectedItem = null;
+
+    ToDoItemRequest itemModel = new ToDoItemRequest();
+
+    async Task insertItemAsync()
+    {
+        isBusy = true;
+
+        itemModel.PlanId = Id;
+        var result = await itemsService.CreateItemAsync(itemModel);
+        if (result.IsSuccess)
+        {
+            items.Add(result.Record);
+        }
+        else
+        {
+            // TODO: Show error alert
+        }
+
+        isBusy = false;
+    }
+
+    async Task submitItemFormAsync()
+    {
+        if (selectedItem == null)
+            await insertItemAsync();
+        else
+        {
+            // Update
+        }
+    }
+    #endregion
 }
