@@ -37,26 +37,27 @@
                 <table>
                     <tr>
                         <td>
-                            <RadzenButton Text="*" ButtonStyle="Radzen.ButtonStyle.Info" ButtonType="Radzen.ButtonType.Button"></RadzenButton>
+                            <RadzenButton Text="*" Disabled="isBusy" ButtonStyle="Radzen.ButtonStyle.Info" ButtonType="Radzen.ButtonType.Button"></RadzenButton>
                         </td>
                         <td>
                             <RadzenTextBox Placeholder="Açıklama ..." @bind-Value="itemModel.Description"></RadzenTextBox>
                         </td>
                         <td>
-                            <RadzenButton Text="Kaydet" ButtonStyle="Radzen.ButtonStyle.Primary" ButtonType="Radzen.ButtonType.Submit"></RadzenButton>
+                            <RadzenButton Text="Kaydet" Disabled="isBusy" ButtonStyle="Radzen.ButtonStyle.Primary" ButtonType="Radzen.ButtonType.Submit"></RadzenButton>
                         </td>
                     </tr>
                     @foreach (var item in items)
                     {
+                        string descriptionStyle = item.IsDone ? "text-decoration-line: line-through" : "text-decoration-line: none";
                         <tr>
                             <td>
-                                <RadzenCheckBox Value="item.IsDone"></RadzenCheckBox>
+                                <RadzenCheckBox @bind-Value="item.IsDone" @onclick="async () => await changeItemStatusAsync(item.Id)"></RadzenCheckBox>
                             </td>
                             <td>
-                                <span>@item.Description</span>
+                                <span style="@descriptionStyle">@item.Description</span>
                             </td>
                             <td>
-                                <RadzenButton Text="X" ButtonStyle="Radzen.ButtonStyle.Danger" ButtonType="Radzen.ButtonType.Button"></RadzenButton>
+                                <RadzenButton Text="X" ButtonStyle="Radzen.ButtonStyle.Danger" Disabled="isBusy" ButtonType="Radzen.ButtonType.Button"></RadzenButton>
                             </td>
                         </tr>
                     }
@@ -205,6 +206,18 @@
         {
             // Update
         }
+    }
+
+    // Update the status of the item Done/Undone
+    async Task changeItemStatusAsync(string itemId)
+    {
+        isBusy = true;
+        var result = await itemsService.ChangeItemStateAsync(itemId);
+        if (!result.IsSuccess)
+        {
+            // TODO: show error alert message
+        }
+        isBusy = false;
     }
     #endregion
 }
